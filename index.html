@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Single Meter Connect/Disconnect</title>
   <style>
-    /* Reset & Base */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -30,7 +29,7 @@
       max-width: 500px;
     }
 
-    h2 {
+    h2, h3 {
       font-size: 20px;
       margin-bottom: 20px;
       color: #333;
@@ -53,7 +52,8 @@
       margin-top: 20px;
     }
 
-    .button-group button {
+    .button-group button,
+    button {
       padding: 12px;
       font-size: 16px;
       font-weight: 600;
@@ -63,27 +63,27 @@
       border-radius: 8px;
       cursor: pointer;
       transition: background 0.3s ease;
+      margin-top: 10px;
     }
 
-    .button-group button:hover {
+    .button-group button:hover,
+    button:hover {
       background: #005a9e;
     }
 
-    #jobTableContainer {
+    #jobTableContainer,
+    #consumerInfoContainer,
+    #meterInfoContainer {
       width: 100%;
       margin-top: 30px;
       overflow-x: auto;
     }
 
-    h3 {
-      text-align: center;
-      margin-bottom: 10px;
-    }
-
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 600px; /* for horizontal scroll on small devices */
+      min-width: 600px;
+      margin-top: 10px;
     }
 
     th, td {
@@ -97,17 +97,13 @@
       color: white;
     }
 
-    /* Responsive tweaks */
     @media (max-width: 600px) {
       h2 {
         font-size: 18px;
       }
 
-      .button-group {
-        flex-direction: column;
-      }
-
-      .button-group button {
+      .button-group button,
+      button {
         font-size: 15px;
         padding: 10px;
       }
@@ -127,12 +123,17 @@
   <div class="container">
     <h2>Single Meter Connect/Disconnect</h2>
     <input type="text" id="mid" placeholder="Enter Meter ID" />
-    
+
     <div class="button-group">
       <button onclick="single_connect()">Connect</button>
       <button onclick="single_disconnect()">Disconnect</button>
       <button onclick="fRCDC()">Get RCDC History</button>
     </div>
+
+    <hr style="margin: 20px 0;" />
+    <h2>Get Meter Details by Consumer ID</h2>
+    <input type="text" id="consumerId" placeholder="Enter Consumer ID" />
+    <button onclick="getMeterDetailsByConsumerId()">Get Meter Details</button>
   </div>
 
   <div id="jobTableContainer">
@@ -151,13 +152,52 @@
     </table>
   </div>
 
+  <div id="consumerInfoContainer">
+    <h3>Consumer Info</h3>
+    <table id="consumerTable" style="display:none;">
+      <thead>
+        <tr>
+          <th>Consumer Number</th>
+          <th>Name</th>
+          <th>Installation Type</th>
+          <th>Date</th>
+          <th>By</th>
+          <th>Address</th>
+        </tr>
+      </thead>
+      <tbody id="consumerTableBody"></tbody>
+    </table>
+  </div>
+
+  <div id="meterInfoContainer">
+    <h3>Meter Info</h3>
+    <table id="meterTable" style="display:none;">
+      <thead>
+        <tr>
+          <th>Meter ID</th>
+          <th>Device ID</th>
+          <th>Manufacturer</th>
+          <th>Firmware</th>
+          <th>Type</th>
+          <th>Category</th>
+          <th>Rating</th>
+          <th>Year</th>
+          <th>First Comm</th>
+          <th>Last Comm</th>
+        </tr>
+      </thead>
+      <tbody id="meterTableBody"></tbody>
+    </table>
+  </div>
 
 <script>
-    const connectApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/ConnectDisconnect/AddConnectDisconnectJob";
-    const rcdcApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/Meter/getRCDCJobsData";
+  const connectApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/ConnectDisconnect/AddConnectDisconnectJob";
+  const rcdcApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/Meter/getRCDCJobsData";
+  const consumerDetailsApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/Meter/getConsumerDetailsByConsumerId";
 
-    const token = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJCUk55ZnhfSXhLZ3BoYlRCT2lxdHFkdzFUcTJQSUxRUVpyai1TM01KVkY4In0.eyJleHAiOjE3NTg5NzI2MTIsImlhdCI6MTc1ODkzNjYxMiwiYXV0aF90aW1lIjoxNzU4OTM2NjEwLCJqdGkiOiIxOTY5YjI1ZC1kMzBlLTRkMDctYjNhZC03YzM4M2NjM2RiYzYiLCJpc3MiOiJodHRwczovL21kbS5nZW51c2R2dm5sLmluL3JlYWxtcy9nZW51c3Bvd2VyIiwiYXVkIjpbImFzc2V0bWFuYWdlbWVudC1hcGkiLCJwcmVwYXktYXBpIiwiZWFhLWFwaSIsIm1kbS1hcGkiLCJ2ZWUtYXBpIiwiYWNjb3VudCJdLCJzdWIiOiI4Y2I1NTMxZi1jNTljLTQ0YzMtYWZkNi1hMmUyNmViNTk4ZjAiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJtZG0tdWkiLCJub25jZSI6IloyODNNMmh3TlVSV1VYWkNSRm94WWxBdFdWOUllaTFYYnpSbmVGbERaV1Z1ZDNBd1QxSlVSbXBGWld0NiIsInNlc3Npb25fc3RhdGUiOiJhMGMzZDZiOS04YzQ4LTQ3M2UtOTUxNy02MWUxODBlYjVmYzIiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJzaWQiOiJhMGMzZDZiOS04YzQ4LTQ3M2UtOTUxNy02MWUxODBlYjVmYzIiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsInJvbGVzIjpbInByZXBheS1yb2xlIiwibWRtLXJvbGUiLCJkZWZhdWx0LXJvbGVzLWdlbnVzcG93ZXIiLCJ2ZWUtcm9sZSIsImVhYS1yb2xlIiwib2ZmbGluZV9hY2Nlc3MiLCJhc3NldG1hbmFnZW1lbnQtcm9sZSIsInVtYV9hdXRob3JpemF0aW9uIl0sIm5hbWUiOiJzZG8gb3JhaS5paSIsInVzZXItY2xhaW1zIjpbIk1JLVZpZXciLCJtZG0tc2luZ2xlLWZlZWRlci1kYXNoYm9hcmQiLCJtZG0tdmlldy1kYXRhIiwiTWV0ZXItVmlldyIsInByZXBheS12aWV3LWRhdGEiLCJtZG0tdXBwY2wtZGFzaGJvYXJkIiwiYXNzZXRtYW5hZ2VtZW50LXZpZXctZGF0YSIsImVhYS12aWV3LWRhdGEiLCJtZG0tcmVwb3J0cyIsInZlZS12aWV3LWRhdGEiLCJtZG0tc2V0LWNvbm5lY3Rpb24iLCJtZG0tZHQtZGFzaGJvYXJkIl0sInByaW9yaXR5LWxldmVsIjoiMSIsInByZWZlcnJlZF91c2VybmFtZSI6InNkby5vcmFpMiIsImdpdmVuX25hbWUiOiJzZG8iLCJmYW1pbHlfbmFtZSI6Im9yYWkuaWkiLCJlbWFpbCI6InNkby5vcmFpLmlpQGR2dm5sLm9yZyJ9.joXTwVnN5BV7deLyZz1TfTnsrhNhYTaC2ScXUy0apVVNVafwhsw6a5k9VHULvi9exv1_KuuvTjNgeQT973h5Y0VF83dO9MnDOrJv31oYsitNY486QIDFA1DH-vFRxPp5RygGiZvWVJ448flHIPKRTnGyfbE0uWID_CjVzxhJFwMgnBFyyIyTrSrlN6ONoJNb3FzBZmBpiK4qWQ2lgXTDfPu3s65ZFc6-jn6c4gk6xMMH4gyTFFs0HOJzMhqbsH4ulrXdLBBQ7T-1NL3CAq8pMOOcWSdfmZe-v-GDBmySlo32bnCvuMVStGL1nxcVWSwpPbbVQNV5mCOL6J_0Jeeidw"; // Replace with actual token
-    const userId = "8cb5531f-c59c-44c3-afd6-a2e26eb598f0";
+  const token = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJCUk55ZnhfSXhLZ3BoYlRCT2lxdHFkdzFUcTJQSUxRUVpyai1TM01KVkY4In0.eyJleHAiOjE3NTg5NzI2MTIsImlhdCI6MTc1ODkzNjYxMiwiYXV0aF90aW1lIjoxNzU4OTM2NjEwLCJqdGkiOiIxOTY5YjI1ZC1kMzBlLTRkMDctYjNhZC03YzM4M2NjM2RiYzYiLCJpc3MiOiJodHRwczovL21kbS5nZW51c2R2dm5sLmluL3JlYWxtcy9nZW51c3Bvd2VyIiwiYXVkIjpbImFzc2V0bWFuYWdlbWVudC1hcGkiLCJwcmVwYXktYXBpIiwiZWFhLWFwaSIsIm1kbS1hcGkiLCJ2ZWUtYXBpIiwiYWNjb3VudCJdLCJzdWIiOiI4Y2I1NTMxZi1jNTljLTQ0YzMtYWZkNi1hMmUyNmViNTk4ZjAiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJtZG0tdWkiLCJub25jZSI6IloyODNNMmh3TlVSV1VYWkNSRm94WWxBdFdWOUllaTFYYnpSbmVGbERaV1Z1ZDNBd1QxSlVSbXBGWld0NiIsInNlc3Npb25fc3RhdGUiOiJhMGMzZDZiOS04YzQ4LTQ3M2UtOTUxNy02MWUxODBlYjVmYzIiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJzaWQiOiJhMGMzZDZiOS04YzQ4LTQ3M2UtOTUxNy02MWUxODBlYjVmYzIiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsInJvbGVzIjpbInByZXBheS1yb2xlIiwibWRtLXJvbGUiLCJkZWZhdWx0LXJvbGVzLWdlbnVzcG93ZXIiLCJ2ZWUtcm9sZSIsImVhYS1yb2xlIiwib2ZmbGluZV9hY2Nlc3MiLCJhc3NldG1hbmFnZW1lbnQtcm9sZSIsInVtYV9hdXRob3JpemF0aW9uIl0sIm5hbWUiOiJzZG8gb3JhaS5paSIsInVzZXItY2xhaW1zIjpbIk1JLVZpZXciLCJtZG0tc2luZ2xlLWZlZWRlci1kYXNoYm9hcmQiLCJtZG0tdmlldy1kYXRhIiwiTWV0ZXItVmlldyIsInByZXBheS12aWV3LWRhdGEiLCJtZG0tdXBwY2wtZGFzaGJvYXJkIiwiYXNzZXRtYW5hZ2VtZW50LXZpZXctZGF0YSIsImVhYS12aWV3LWRhdGEiLCJtZG0tcmVwb3J0cyIsInZlZS12aWV3LWRhdGEiLCJtZG0tc2V0LWNvbm5lY3Rpb24iLCJtZG0tZHQtZGFzaGJvYXJkIl0sInByaW9yaXR5LWxldmVsIjoiMSIsInByZWZlcnJlZF91c2VybmFtZSI6InNkby5vcmFpMiIsImdpdmVuX25hbWUiOiJzZG8iLCJmYW1pbHlfbmFtZSI6Im9yYWkuaWkiLCJlbWFpbCI6InNkby5vcmFpLmlpQGR2dm5sLm9yZyJ9.joXTwVnN5BV7deLyZz1TfTnsrhNhYTaC2ScXUy0apVVNVafwhsw6a5k9VHULvi9exv1_KuuvTjNgeQT973h5Y0VF83dO9MnDOrJv31oYsitNY486QIDFA1DH-vFRxPp5RygGiZvWVJ448flHIPKRTnGyfbE0uWID_CjVzxhJFwMgnBFyyIyTrSrlN6ONoJNb3FzBZmBpiK4qWQ2lgXTDfPu3s65ZFc6-jn6c4gk6xMMH4gyTFFs0HOJzMhqbsH4ulrXdLBBQ7T-1NL3CAq8pMOOcWSdfmZe-v-GDBmySlo32bnCvuMVStGL1nxcVWSwpPbbVQNV5mCOL6J_0Jeeidw"; // Replace this with your actual token
+  const userId = "8cb5531f-c59c-44c3-afd6-a2e26eb598f0";
+
   async function single_connect() {
     const meterid = document.getElementById("mid").value.trim();
     if (!meterid) {
@@ -210,8 +250,7 @@
     }
   }
 
-
-async function single_disconnect() {
+  async function single_disconnect() {
     const meterid = document.getElementById("mid").value.trim();
     if (!meterid) {
       alert("Please enter a valid Meter ID.");
@@ -255,26 +294,22 @@ async function single_disconnect() {
         alert("Meter Disconnected Successfully: " + meterid);
         await fetchRCDCJobs(meterid, token, rcdcApi);
       } else {
-        alert("Failed to connect meter. Status: " + connectResponse.status);
+        alert("Failed to disconnect meter. Status: " + connectResponse.status);
       }
     } catch (error) {
-      console.error("Error connecting meter:", error);
+      console.error("Error disconnecting meter:", error);
       alert("An error occurred. See console for details.");
     }
   }
 
-
-async function fRCDC() {
+  async function fRCDC() {
     const meterid = document.getElementById("mid").value.trim();
     if (!meterid) {
       alert("Please enter a valid Meter ID.");
       return;
     }
- fetchRCDCJobs(meterid, token, rcdcApi);
-   
+    fetchRCDCJobs(meterid, token, rcdcApi);
   }
-
-
 
   async function fetchRCDCJobs(meterid, token, rcdcApi) {
     const payload = {
@@ -312,11 +347,10 @@ async function fRCDC() {
 
   function renderJobTable(jobs) {
     const tbody = document.getElementById("jobTableBody");
-    tbody.innerHTML = ""; // Clear existing rows
+    tbody.innerHTML = "";
 
     jobs.forEach(job => {
       const row = document.createElement("tr");
-
       row.innerHTML = `
         <td>${job.ref_id}</td>
         <td>${job.parameters}</td>
@@ -324,14 +358,101 @@ async function fRCDC() {
         <td>${job.created_date}</td>
         <td>${job.completion_date || "-"}</td>
       `;
-
       tbody.appendChild(row);
     });
 
     document.getElementById("jobTable").style.display = "table";
   }
+
+  async function getMeterDetailsByConsumerId() {
+    const consumerId = document.getElementById("consumerId").value.trim();
+    if (!consumerId) {
+      alert("Please enter a valid Consumer ID.");
+      return;
+    }
+
+    const payload = {
+      consumerId: consumerId,
+      pageNumber: 0,
+      pageSize: 25,
+      totalRecords: 0,
+      consumerMobileNumber: ""
+    };
+
+    try {
+      const response = await fetch(consumerDetailsApi, {
+        method: "PUT",
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+      console.log("Consumer Meter Details Response:", result);
+
+      if (result.tabledata) {
+        renderConsumerInfo(JSON.parse(result.tabledata));
+      }
+
+      if (result.gridData && result.gridData.length > 0) {
+        renderMeterGrid(result.gridData);
+      } else {
+        document.getElementById("meterTable").style.display = "none";
+        alert("No meter data found for this Consumer ID.");
+      }
+    } catch (error) {
+      console.error("Error fetching meter details:", error);
+      alert("Error fetching meter details. See console for more info.");
+    }
+  }
+
+  function renderConsumerInfo(consumers) {
+    const tbody = document.getElementById("consumerTableBody");
+    tbody.innerHTML = "";
+
+    consumers.forEach(c => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${c.consumer_number}</td>
+        <td>${c.consumer_name}</td>
+        <td>${c.installation_type}</td>
+        <td>${c.installation_date}</td>
+        <td>${c.installation_by}</td>
+        <td>${c.installation_address}</td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    document.getElementById("consumerTable").style.display = "table";
+  }
+
+  function renderMeterGrid(meters) {
+    const tbody = document.getElementById("meterTableBody");
+    tbody.innerHTML = "";
+
+    meters.forEach(m => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${m.meter_id}</td>
+        <td>${m.device_id}</td>
+        <td>${m.manufacturer_name}</td>
+        <td>${m.firmware_version}</td>
+        <td>${m.meter_type}</td>
+        <td>${m.meter_category}</td>
+        <td>${m.current_rating}</td>
+        <td>${m.manufacturing_year}</td>
+        <td>${m.first_communication}</td>
+        <td>${m.last_communication}</td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    document.getElementById("meterTable").style.display = "table";
+  }
 </script>
 
 </body>
 </html>
-
