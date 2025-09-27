@@ -121,7 +121,15 @@
 <body>
 
   <div class="container">
-    <h2>Single Meter Connect/Disconnect</h2>
+    <h2>Get Meter Details by ACCOUNT ID</h2>
+    <input type="text" id="consumerId" placeholder="Enter Consumer ID" />
+    <div class="button-group">
+    <button onclick="getMeterDetailsByConsumerId()">Get Meter Details</button>
+    </div>
+    <hr style="margin: 10px 0;" />
+    <h4 align="center">OR</h4>
+    <hr style="margin: 10px 0;" />
+    <h2>Enter Valid Meter No.</h2>
     <input type="text" id="mid" placeholder="Enter Meter ID" />
 
     <div class="button-group">
@@ -130,10 +138,7 @@
       <button onclick="fRCDC()">Get RCDC History</button>
     </div>
 
-    <hr style="margin: 20px 0;" />
-    <h2>Get Meter Details by Consumer ID</h2>
-    <input type="text" id="consumerId" placeholder="Enter Consumer ID" />
-    <button onclick="getMeterDetailsByConsumerId()">Get Meter Details</button>
+    
   </div>
 
   <div id="jobTableContainer">
@@ -141,8 +146,7 @@
     <table id="jobTable" style="display:none;">
       <thead>
         <tr>
-          <th>Ref ID</th>
-          <th>Parameters</th>
+          <th>Action</th>
           <th>Status</th>
           <th>Created Date</th>
           <th>Completion Date</th>
@@ -158,10 +162,8 @@
       <thead>
         <tr>
           <th>Consumer Number</th>
-          <th>Name</th>
-          <th>Installation Type</th>
-          <th>Date</th>
-          <th>By</th>
+          <th>Name</th> 
+          <th>Installation Date</th>    
           <th>Address</th>
         </tr>
       </thead>
@@ -176,12 +178,7 @@
         <tr>
           <th>Meter ID</th>
           <th>Device ID</th>
-          <th>Manufacturer</th>
-          <th>Firmware</th>
-          <th>Type</th>
-          <th>Category</th>
           <th>Rating</th>
-          <th>Year</th>
           <th>First Comm</th>
           <th>Last Comm</th>
         </tr>
@@ -352,7 +349,6 @@
     jobs.forEach(job => {
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td>${job.ref_id}</td>
         <td>${job.parameters}</td>
         <td>${job.status}</td>
         <td>${job.created_date}</td>
@@ -418,9 +414,7 @@
       row.innerHTML = `
         <td>${c.consumer_number}</td>
         <td>${c.consumer_name}</td>
-        <td>${c.installation_type}</td>
         <td>${c.installation_date}</td>
-        <td>${c.installation_by}</td>
         <td>${c.installation_address}</td>
       `;
       tbody.appendChild(row);
@@ -435,15 +429,11 @@
 
     meters.forEach(m => {
       const row = document.createElement("tr");
+      document.getElementById("mid").value = m.meter_id;
       row.innerHTML = `
         <td>${m.meter_id}</td>
         <td>${m.device_id}</td>
-        <td>${m.manufacturer_name}</td>
-        <td>${m.firmware_version}</td>
-        <td>${m.meter_type}</td>
-        <td>${m.meter_category}</td>
         <td>${m.current_rating}</td>
-        <td>${m.manufacturing_year}</td>
         <td>${m.first_communication}</td>
         <td>${m.last_communication}</td>
       `;
@@ -456,4 +446,5 @@
 
 </body>
 </html>
+
 
