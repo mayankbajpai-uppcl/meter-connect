@@ -65,7 +65,7 @@
       transition: background 0.3s ease;
       margin-top: 10px;
     }
-
+ 
     .button-group button:hover,
     button:hover {
       background: #005a9e;
@@ -115,11 +115,21 @@
       th, td {
         padding: 10px 6px;
       }
-    }
+}
+
+.blinking {
+  animation: blink 1s step-start infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
   </style>
 </head>
 <body>
-
+<h4 class="blinking">Reauthentication Time: <span id="token-expiry" style="color:red;"></span></h4>
   <div class="container">
     <h2>Get Meter Details by ACCOUNT ID</h2>
     <input type="text" id="consumerId" placeholder="Enter Consumer ID" />
@@ -442,10 +452,41 @@
 
     document.getElementById("meterTable").style.display = "table";
   }
+
+
+ function base64UrlDecode(str) {
+    // Replace URL-specific characters
+    str = str.replace(/-/g, '+').replace(/_/g, '/');
+
+    // Pad the string
+    const pad = str.length % 4;
+    if (pad) {
+      str += '='.repeat(4 - pad);
+    }
+
+    // Decode the string
+    const decoded = atob(str);
+    return JSON.parse(decoded);
+  }
+
+  // Decode the payload
+  const payload1 = base64UrlDecode(token.split('.')[1]);
+
+  // Get the 'exp' claim (expiration time in seconds since epoch)
+  const exp = payload1.exp;
+
+  // Convert to a readable time
+  const expiryDate = new Date(exp * 1000); // Convert to milliseconds
+
+  // Format date (optional, for readability)
+  const formatted = expiryDate.toLocaleString();
+
+  // Display it on the page
+  document.getElementById('token-expiry').textContent = formatted;
+
 </script>
 
 </body>
 </html>
-
 
 
