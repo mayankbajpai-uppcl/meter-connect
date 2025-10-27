@@ -134,7 +134,7 @@
     <h2>Get Meter Details by ACCOUNT ID</h2>
     <input type="text" id="consumerId" placeholder="Enter Consumer ID" />
     <div class="button-group">
-    <button onclick="getMeterDetailsByConsumerId()">Get Meter Details</button>
+    <button onclick="searchRecord()">Get Meter Details</button>
     </div>
     <hr style="margin: 10px 0;" />
     <h4 align="center">OR</h4>
@@ -484,10 +484,44 @@
   // Display it on the page
   document.getElementById('token-expiry').textContent = formatted;
 
+
+
+ async function searchRecord() {
+      const query = document.getElementById("consumerId").value.trim();
+      const output = document.getElementById("mid");
+
+      if (!query) {
+        alert("Please enter a value.");
+        return;
+      }
+
+      output.textContent = "⏳ Searching...";
+
+      try {
+        const url = `https://script.google.com/macros/s/AKfycbzeIpvTuYOJYiInLOJO3wUQlc9NCmzHJomTdQktsqzG63kbwpB1vnnOkRQWfDJSNcpsLg/exec?q=${encodeURIComponent(query)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.error) {
+          output.textContent = `❌ ${data.error}`;
+        } else {
+          let result = "";
+          for (let key in data) {
+            result += `${key}: ${data[key]}\n`;
+          }
+          output.value = result.trim();
+        }
+      } catch (err) {
+        output.value = "⚠️ Error fetching data. Please try again.";
+      }
+    }
+
+  
 </script>
 
 </body>
 </html>
+
 
 
 
