@@ -148,6 +148,15 @@
       <button onclick="single_disconnect()">Disconnect</button>
       <button onclick="fRCDC()">Get RCDC History</button>
     </div>
+<hr style="margin: 20px 0;" />
+<h2>Bulk Connect/Disconnect (Paste from Excel or Comma-Separated)</h2>
+<textarea id="bulkMeters" placeholder="Paste meter numbers here (one per line or comma separated)"
+  style="width:100%;height:120px;padding:10px;border:1px solid #ccc;border-radius:6px;font-size:16px;"></textarea>
+
+<div class="button-group">
+  <button onclick="bulk_connect()">Bulk Connect</button>
+  <button onclick="bulk_disconnect()">Bulk Disconnect</button>
+</div>
 
     
   </div>
@@ -524,6 +533,147 @@ function decodeAndShowExpiry(token) {
         output.value = "⚠️ Error fetching data. Please try again.";
       }
     }
+
+
+function parseMeterInput(text) {
+  // Replace newlines, tabs, and multiple spaces with commas
+  return Array.from(
+    new Set( // remove duplicates automatically
+      text
+        .split(/[\s,]+/) // split on commas, newlines, tabs, or spaces
+        .map(m => m.trim()) // remove extra spaces
+        .filter(m => m.length > 0) // remove empties
+    )
+  );
+}
+
+async function bulk_connect() {
+  const rawText = document.getElementById("bulkMeters").value.trim();
+  if (!rawText) {
+    alert("Please paste or enter at least one meter number.");
+    return;
+  }
+
+  const meterList = parseMeterInput(rawText);
+  if (meterList.length === 0) {
+    alert("No valid meter numbers found.");
+    return;
+  }
+
+  console.log("Bulk Connect Meters:", meterList);
+
+  const payload = {
+    id: 0,
+    jobname: "Connect",
+    jobtype: "CommaSeperatedMeters",
+    jobcategory: "ConnectDisconnect",
+    frequencytype: "On Demand",
+    frequencyinterval: "",
+    meterIdList: meterList,
+    jobparameters: "LOAD_SWITCH_OPERATION",
+    payload: "Connect",
+    remarks: "",
+    reason: "Payment Settlement",
+    password: null,
+    userid: "8cb5531f-c59c-44c3-afd6-a2e26eb598f0",
+    jobid: "",
+    cronexpression: "",
+    priority: 0,
+    virtualgroupid: 0
+  };
+
+  try {
+    const response = await fetch(connectApi, {
+      method: "PUT",
+      headers: {
+        "Authorization": "Bearer " + token,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const text = await response.text();
+    console.log("Bulk Connect API response:", text);
+
+    if (response.ok) {
+      alert(`✅ Bulk Connect job submitted for ${meterList.length} meters.`);
+    } else {
+      alert(`❌ Failed to connect. Status: ${response.status}`);
+    }
+  } catch (err) {
+    console.error("Bulk Connect error:", err);
+    alert("Error occurred while bulk connecting meters.");
+  }
+}
+
+async function bulk_disconnect() {
+  const rawText = document.getElementById("bulkMeters").value.trim();
+  if (!rawText) {
+    alert("Please paste or enter at least one meter number.");
+    return;
+  }
+
+  const meterList = parseMeterInput(rawText);
+  if (meterList.length === 0) {
+    alert("No valid meter numbers found.");
+    return;
+  }
+
+  console.log("Bulk Disconnect Meters:", meterList);
+
+
+ for (const meterId of meterList) {
+        const payload = {
+          id: 0,
+          jobname: "Disconnect",
+          jobtype: "SingleMeter",
+          jobcategory: "ConnectDisconnect",
+          frequencytype: "On Demand",
+          frequencyinterval: "",
+          meterIdList: [meterId],
+          jobparameters: "LOAD_SWITCH_OPERATION",
+          payload: "Disconnect",
+          remarks: "",
+          password: null,
+          userid: userId,
+          jobid: "",
+          cronexpression: "",
+          priority: 0,
+          virtualgroupid: 0
+        };
+
+        try {
+          const response = await fetch(connectApi, {
+            method: "PUT",
+            headers: {
+              "Authorization": "Bearer " + token,
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            },
+            body: JSON.stringify(payload)
+          });
+
+          const text = await response.text();
+          console.log(`Meter ${meterId} → Response Code:`, response.status);
+          console.log("Response Body:", text);
+        } catch (error) {
+          console.error(`Error disconnecting meter ${meterId}:`, error);
+        }
+      }
+
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
      window.onload = async () => {
