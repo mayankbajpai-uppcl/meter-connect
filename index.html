@@ -243,6 +243,7 @@ async function getTokenFromSheet() {
     }
     const connectPayload = {
       id: 0,
+      applicableduration: "",
       jobname: "Connect",
       jobtype: "SingleMeter",
       jobcategory: "ConnectDisconnect",
@@ -252,7 +253,7 @@ async function getTokenFromSheet() {
       jobparameters: "LOAD_SWITCH_OPERATION",
       payload: "Connect",
       remarks: "",
-      reason: "paid",
+      reason: "Payment Settlement",
       password: null,
       userid: userId,
       jobid: "",
@@ -686,6 +687,7 @@ async function bulk_disconnect() {
 
 </body>
 </html>
+
 
 
 
