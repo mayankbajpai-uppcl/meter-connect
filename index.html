@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -208,7 +207,9 @@
   </div>
 
 <script>
-  const connectApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/ConnectDisconnect/AddConnectDisconnectJob";
+  const connectApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/ConnectDisconnect/AddConnectJob";
+  const disconnectApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/ConnectDisconnect/AddDisconnectJob";
+  
   const rcdcApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/Meter/getRCDCJobsData";
   const consumerDetailsApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/Meter/getConsumerDetailsByConsumerId";
 
@@ -296,26 +297,27 @@ async function getTokenFromSheet() {
     }
     const connectPayload = {
       id: 0,
-      jobname: "Disconnect",
-      jobtype: "SingleMeter",
-      jobcategory: "ConnectDisconnect",
-      frequencytype: "On Demand",
-      frequencyinterval: "",
-      meterIdList: [meterid],
-      jobparameters: "LOAD_SWITCH_OPERATION",
-      payload: "Disconnect",
-      remarks: "",
-      reason: "paid",
-      password: null,
-      userid: userId,
-      jobid: "",
-      cronexpression: "",
-      priority: 2,
-      virtualgroupid: 0
+  jobname: "Disconnect",
+  jobtype: "SingleMeter",
+  jobcategory: "ConnectDisconnect",
+  frequencytype: "On Demand",
+  frequencyinterval: "",
+  applicableduration: "",
+  meterIdList: [meterid],        
+  jobparameters: "LOAD_SWITCH_OPERATION",
+  payload: "Disconnect",
+  remarks: "",
+  reason: "Non-payment of outstanding Debt",  
+  password: null,
+  userid: userId,                 
+  jobid: "",
+  cronexpression: "",
+  priority: 0,                    
+  virtualgroupid: 0
     };
 
     try {
-      const connectResponse = await fetch(connectApi, {
+      const connectResponse = await fetch(disconnectApi, {
         method: "PUT",
         headers: {
           "Authorization": "Bearer " + token,
@@ -626,22 +628,24 @@ async function bulk_disconnect() {
 
  for (const meterId of meterList) {
         const payload = {
-          id: 0,
-          jobname: "Disconnect",
-          jobtype: "SingleMeter",
-          jobcategory: "ConnectDisconnect",
-          frequencytype: "On Demand",
-          frequencyinterval: "",
-          meterIdList: [meterId],
-          jobparameters: "LOAD_SWITCH_OPERATION",
-          payload: "Disconnect",
-          remarks: "",
-          password: null,
-          userid: userId,
-          jobid: "",
-          cronexpression: "",
-          priority: 0,
-          virtualgroupid: 0
+        id: 0,
+  jobname: "Disconnect",
+  jobtype: "SingleMeter",
+  jobcategory: "ConnectDisconnect",
+  frequencytype: "On Demand",
+  frequencyinterval: "",
+  applicableduration: "",
+  meterIdList: [meterId],
+  jobparameters: "LOAD_SWITCH_OPERATION",
+  payload: "Disconnect",
+  remarks: "",
+  reason: "Non-payment of outstanding Debt",
+  password: null,
+  userid: userId,
+  jobid: "",
+  cronexpression: "",
+  priority: 0,
+  virtualgroupid: 0
         };
 
         try {
@@ -687,42 +691,3 @@ async function bulk_disconnect() {
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
