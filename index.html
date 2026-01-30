@@ -208,7 +208,7 @@
 
 <script>
   const connectApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/ConnectDisconnect/AddConnectJob";
-  const disconnectApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/ConnectDisconnect/AddDisconnectJob";
+  const disconnectApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/ConnectDisconnect/";
   
   const rcdcApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/Meter/getRCDCJobsData";
   const consumerDetailsApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/Meter/getConsumerDetailsByConsumerId";
@@ -649,7 +649,7 @@ async function bulk_disconnect() {
         };
 
         try {
-          const response = await fetch(connectApi, {
+          const response = await fetch(disconnectApi, {
             method: "PUT",
             headers: {
               "Authorization": "Bearer " + token,
@@ -668,19 +668,6 @@ async function bulk_disconnect() {
       }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
      window.onload = async () => {
       await getTokenFromSheet();
       // Refresh token every 5 minutes automatically
@@ -691,3 +678,4 @@ async function bulk_disconnect() {
 
 </body>
 </html>
+
