@@ -276,8 +276,7 @@ function renderBalance(d) {
   }
 
   if (currentBalance < 1) {
-    alert("❌ Cannot connect: Balance is less than 1.");
-    return;
+    alert("❌ Warning:  Balance is still negative.");
   }
     const meterid = document.getElementById("mid").value.trim();
     if (!meterid) {
