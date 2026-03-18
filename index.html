@@ -152,6 +152,7 @@ const disconnectApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/ConnectDisco
 const consumerDetailsApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/Meter/getConsumerDetailsByConsumerId";
 const balanceApi = "https://mdm.genusdvvnl.in/spmapi/api/Consumer/ConsumerDetails";
 const rcdcApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/Meter/getRCDCJobsData";
+let currentBalance = null;
 
 const tokenApi = "https://script.google.com/macros/s/AKfycbzaBJAzv8F7yMfAoYg2cpt2ROThRc18AAr9WnDj1ecWSFas2XrwQDtegfGsSIE1Htr7/exec"; // keep yours
 let token = "";
@@ -250,6 +251,7 @@ async function fetchBalanceDetails(consumerNo) {
 
 // ✅ RENDER BALANCE
 function renderBalance(d) {
+  currentBalance = d.Balance;
   document.getElementById("mid").value = d.MeterNo;
   const tbody = document.getElementById("balanceTableBody");
   const status = d.Balance < 0 ? "🔴 LOW" : "🟢 OK";
@@ -267,11 +269,23 @@ function renderBalance(d) {
 }
 
  async function single_connect() {
+
+   if (currentBalance === null) {
+    alert("⚠️ Please fetch consumer details first.");
+    return;
+  }
+
+  if (currentBalance < 1) {
+    alert("❌ Cannot connect: Balance is less than 1.");
+    return;
+  }
     const meterid = document.getElementById("mid").value.trim();
     if (!meterid) {
       alert("Please enter a valid Meter ID.");
       return;
     }
+
+
     const connectPayload = {
       id: 0,
       applicableduration: "",
