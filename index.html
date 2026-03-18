@@ -1,166 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Single Meter Connect/Disconnect</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Single Meter Connect/Disconnect</title>
 
-    body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: #f3f6fb;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-    }
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .container {
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 500px;
-    }
-
-    h2, h3 {
-      font-size: 20px;
-      margin-bottom: 20px;
-      color: #333;
-      text-align: center;
-    }
-
-    input[type="text"] {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 16px;
-    }
-
-    .button-group {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 20px;
-    }
-
-    .button-group button,
-    button {
-      padding: 12px;
-      font-size: 16px;
-      font-weight: 600;
-      color: #fff;
-      background: #0078d7;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-      margin-top: 10px;
-    }
- 
-    .button-group button:hover,
-    button:hover {
-      background: #005a9e;
-    }
-
-    #jobTableContainer,
-    #consumerInfoContainer,
-    #meterInfoContainer {
-      width: 100%;
-      margin-top: 30px;
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 600px;
-      margin-top: 10px;
-    }
-
-    th, td {
-      padding: 12px 10px;
-      border: 1px solid #ccc;
-      text-align: center;
-    }
-
-    th {
-      background-color: #0078d7;
-      color: white;
-    }
-
-    @media (max-width: 600px) {
-      h2 {
-        font-size: 18px;
-      }
-
-      .button-group button,
-      button {
-        font-size: 15px;
-        padding: 10px;
-      }
-
-      table {
-        font-size: 14px;
-      }
-
-      th, td {
-        padding: 10px 6px;
-      }
+body {
+  font-family: "Segoe UI";
+  background: #f3f6fb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
 }
+
+.container {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 500px;
+}
+
+h2, h3 { margin-bottom: 15px; text-align: center; }
+
+input, textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+button {
+  padding: 10px;
+  margin-top: 10px;
+  background: #0078d7;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover { background: #005a9e; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+th { background: #0078d7; color: white; }
 
 .blinking {
-  animation: blink 1s step-start infinite;
+  animation: blink 1s infinite;
 }
-
-@keyframes blink {
-  50% {
-    opacity: 0;
-  }
-}
-  </style>
+@keyframes blink { 50% { opacity: 0; } }
+</style>
 </head>
+
 <body>
-<h4 class="blinking">LoginRequired At: <span id="token-expiry" style="color:red;"></span></h4>
-  <div class="container">
-    <h2>Get Meter Details by ACCOUNT ID</h2>
-    <input type="text" id="consumerId" placeholder="Enter Consumer ID" />
-    <div class="button-group">
-    <button onclick="searchRecord()">Get Meter Details</button>
-    </div>
-    <hr style="margin: 10px 0;" />
-    <h4 align="center">OR</h4>
-    <hr style="margin: 10px 0;" />
-    <h2>Enter Valid Meter No.</h2>
-    <input type="text" id="mid" placeholder="Enter Meter ID" />
 
-    <div class="button-group">
-      <button onclick="single_connect()">Connect</button>
-      <button onclick="single_disconnect()">Disconnect</button>
-      <button onclick="fRCDC()">Get RCDC History</button>
-    </div>
-<hr style="margin: 20px 0;" />
-<h2>Bulk Connect/Disconnect (Paste from Excel or Comma-Separated)</h2>
-<textarea id="bulkMeters" placeholder="Paste meter numbers here (one per line or comma separated)"
-  style="width:100%;height:120px;padding:10px;border:1px solid #ccc;border-radius:6px;font-size:16px;"></textarea>
+<h4 class="blinking">Token Expiry: <span id="token-expiry"></span></h4>
 
-<div class="button-group">
-  <button onclick="bulk_connect()">Bulk Connect</button>
-  <button onclick="bulk_disconnect()">Bulk Disconnect</button>
+<div class="container">
+<h2>Get Meter Details</h2>
+<input type="text" id="consumerId" placeholder="Enter Consumer ID" />
+<button onclick="searchRecord()">Search</button>
+
+<h3>OR</h3>
+
+<input type="text" id="mid" placeholder="Enter Meter ID" />
+<button onclick="single_connect()">Connect</button>
+<button onclick="fRCDC()">RCDC History</button>
 </div>
 
-    
-  </div>
+<!-- Consumer Info -->
+<div>
+<h3>Consumer Info</h3>
+<table id="consumerTable" style="display:none;">
+<thead>
+<tr>
+<th>Consumer</th><th>Name</th><th>Date</th><th>Address</th>
+</tr>
+</thead>
+<tbody id="consumerTableBody"></tbody>
+</table>
+</div>
 
-  <div id="jobTableContainer">
+<!-- Meter Info -->
+<div>
+<h3>Meter Info</h3>
+<table id="meterTable" style="display:none;">
+<thead>
+<tr>
+<th>Meter</th><th>Device</th><th>Rating</th><th>First</th><th>Last</th>
+</tr>
+</thead>
+<tbody id="meterTableBody"></tbody>
+</table>
+</div>
+
+<!-- ✅ NEW BALANCE TABLE -->
+<div>
+<h3>Balance Info</h3>
+<table id="balanceTable" style="display:none;">
+<thead>
+<tr>
+<th>Balance</th>
+<th>Last Recharge</th>
+<th>Date</th>
+<th>Type</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody id="balanceTableBody"></tbody>
+</table>
+</div>
+
+
+<div id="jobTableContainer">
     <h3>RCDC Job History</h3>
     <table id="jobTable" style="display:none;">
       <thead>
@@ -175,68 +144,129 @@
     </table>
   </div>
 
-  <div id="consumerInfoContainer">
-    <h3>Consumer Info</h3>
-    <table id="consumerTable" style="display:none;">
-      <thead>
-        <tr>
-          <th>Consumer Number</th>
-          <th>Name</th> 
-          <th>Installation Date</th>    
-          <th>Address</th>
-        </tr>
-      </thead>
-      <tbody id="consumerTableBody"></tbody>
-    </table>
-  </div>
-
-  <div id="meterInfoContainer">
-    <h3>Meter Info</h3>
-    <table id="meterTable" style="display:none;">
-      <thead>
-        <tr>
-          <th>Meter ID</th>
-          <th>Device ID</th>
-          <th>Rating</th>
-          <th>First Comm</th>
-          <th>Last Comm</th>
-        </tr>
-      </thead>
-      <tbody id="meterTableBody"></tbody>
-    </table>
-  </div>
 
 <script>
-  const connectApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/ConnectDisconnect/AddConnectJob";
-  const disconnectApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/ConnectDisconnect/";
-  
-  const rcdcApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/Meter/getRCDCJobsData";
-  const consumerDetailsApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/Meter/getConsumerDetailsByConsumerId";
 
+const connectApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/ConnectDisconnect/AddConnectJob";
+const disconnectApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/ConnectDisconnect/";
+const consumerDetailsApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/Meter/getConsumerDetailsByConsumerId";
+const balanceApi = "https://mdm.genusdvvnl.in/spmapi/api/Consumer/ConsumerDetails";
+const rcdcApi = "https://mdm.genusdvvnl.in/urjaservice/api/v1/Meter/getRCDCJobsData";
 
+const tokenApi = "https://script.google.com/macros/s/AKfycbzaBJAzv8F7yMfAoYg2cpt2ROThRc18AAr9WnDj1ecWSFas2XrwQDtegfGsSIE1Htr7/exec"; // keep yours
+let token = "";
+const userId = "8cb5531f-c59c-44c3-afd6-a2e26eb598f0";
 
-  const tokenApi = "https://script.google.com/macros/s/AKfycbzaBJAzv8F7yMfAoYg2cpt2ROThRc18AAr9WnDj1ecWSFas2XrwQDtegfGsSIE1Htr7/exec";
-  let token = "";
 async function getTokenFromSheet() {
+  const res = await fetch(tokenApi);
+  const data = await res.json();
+  token = data.token;
+  decodeAndShowExpiry(token);
+}
+
+
+async function searchRecord() {
+  const query = document.getElementById("consumerId").value.trim();
+  if (!query) {
+    alert("Please enter a value.");
+    return;
+  }
+
+  
+      // ✅ AFTER GETTING METER → CALL OTHER APIs
+      fetchBalanceDetails(query);
+      
+  
+  }
+
+
+
+
+
+
+
+
+
+
+function decodeAndShowExpiry(token) {
   try {
-    const res = await fetch(tokenApi);
-    const data = await res.json();
-    if (data && data.token) {
-      token = data.token;
-      console.log("✅ Token fetched successfully");
-      decodeAndShowExpiry(token);
-    } else {
-      alert("⚠️ Failed to retrieve token from Google Sheet");
-    }
-  } catch (error) {
-    console.error("Error fetching token:", error);
-    alert("Error fetching token from Google Sheet.");
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    document.getElementById("token-expiry").textContent =
+      new Date(payload.exp * 1000).toLocaleString();
+  } catch {
+    document.getElementById("token-expiry").textContent = "Invalid";
   }
 }
 
-  const userId = "8cb5531f-c59c-44c3-afd6-a2e26eb598f0";
 
-  async function single_connect() {
+
+
+function renderConsumerInfo(data) {
+  const tbody = document.getElementById("consumerTableBody");
+  tbody.innerHTML = "";
+  data.forEach(c => {
+    tbody.innerHTML += `
+      <tr>
+      <td>${c.consumer_number}</td>
+      <td>${c.consumer_name}</td>
+      <td>${c.installation_date}</td>
+      <td>${c.installation_address}</td>
+      </tr>`;
+  });
+  document.getElementById("consumerTable").style.display = "table";
+}
+
+function renderMeterGrid(data) {
+  const tbody = document.getElementById("meterTableBody");
+  tbody.innerHTML = "";
+  data.forEach(m => {
+    document.getElementById("mid").value = m.meter_id;
+    tbody.innerHTML += `
+      <tr>
+      <td>${m.meter_id}</td>
+      <td>${m.device_id}</td>
+      <td>${m.current_rating}</td>
+      <td>${m.first_communication}</td>
+      <td>${m.last_communication}</td>
+      </tr>`;
+  });
+  document.getElementById("meterTable").style.display = "table";
+}
+
+// ✅ NEW FUNCTION
+async function fetchBalanceDetails(consumerNo) {
+  try {
+    const res = await fetch(`${balanceApi}?consumerNo=${consumerNo}`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+
+    const result = await res.json();
+    if (result.element) renderBalance(result.element);
+
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+// ✅ RENDER BALANCE
+function renderBalance(d) {
+  document.getElementById("mid").value = d.MeterNo;
+  const tbody = document.getElementById("balanceTableBody");
+  const status = d.Balance < 0 ? "🔴 LOW" : "🟢 OK";
+
+  tbody.innerHTML = `
+    <tr>
+    <td style="color:${d.Balance < 0 ? 'red':'green'}">${d.Balance}</td>
+    <td>${d.lastRecharge || "-"}</td>
+    <td>${d.lastRechargeDate || "-"}</td>
+    <td>${d.MeterConnection}</td>
+    <td>${status}</td>
+    </tr>`;
+
+  document.getElementById("balanceTable").style.display = "table";
+}
+
+ async function single_connect() {
     const meterid = document.getElementById("mid").value.trim();
     if (!meterid) {
       alert("Please enter a valid Meter ID.");
@@ -288,61 +318,7 @@ async function getTokenFromSheet() {
       alert("An error occurred. See console for details.");
     }
   }
-
-  async function single_disconnect() {
-    const meterid = document.getElementById("mid").value.trim();
-    if (!meterid) {
-      alert("Please enter a valid Meter ID.");
-      return;
-    }
-    const connectPayload = {
-      id: 0,
-  jobname: "Disconnect",
-  jobtype: "SingleMeter",
-  jobcategory: "ConnectDisconnect",
-  frequencytype: "On Demand",
-  frequencyinterval: "",
-  applicableduration: "",
-  meterIdList: [meterid],        
-  jobparameters: "LOAD_SWITCH_OPERATION",
-  payload: "Disconnect",
-  remarks: "",
-  reason: "Non-payment of outstanding Debt",  
-  password: null,
-  userid: userId,                 
-  jobid: "",
-  cronexpression: "",
-  priority: 0,                    
-  virtualgroupid: 0
-    };
-
-    try {
-      const connectResponse = await fetch(disconnectApi, {
-        method: "PUT",
-        headers: {
-          "Authorization": "Bearer " + token,
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify(connectPayload)
-      });
-
-      const connectText = await connectResponse.text();
-      console.log("Connect API response:", connectText);
-
-      if (connectResponse.ok) {
-        alert("Meter Disconnected Successfully: " + meterid);
-        await fetchRCDCJobs(meterid, token, rcdcApi);
-      } else {
-        alert("Failed to disconnect meter. Status: " + connectResponse.status);
-      }
-    } catch (error) {
-      console.error("Error disconnecting meter:", error);
-      alert("An error occurred. See console for details.");
-    }
-  }
-
-  async function fRCDC() {
+async function fRCDC() {
     const meterid = document.getElementById("mid").value.trim();
     if (!meterid) {
       alert("Please enter a valid Meter ID.");
@@ -384,7 +360,6 @@ async function getTokenFromSheet() {
       alert("Failed to fetch job history.");
     }
   }
-
   function renderJobTable(jobs) {
     const tbody = document.getElementById("jobTableBody");
     tbody.innerHTML = "";
@@ -402,280 +377,26 @@ async function getTokenFromSheet() {
 
     document.getElementById("jobTable").style.display = "table";
   }
-
-  async function getMeterDetailsByConsumerId() {
-    const consumerId = document.getElementById("consumerId").value.trim();
-    if (!consumerId) {
-      alert("Please enter a valid Consumer ID.");
-      return;
-    }
-
-    const payload = {
-      consumerId: consumerId,
-      pageNumber: 0,
-      pageSize: 25,
-      totalRecords: 0,
-      consumerMobileNumber: ""
-    };
-
-    try {
-      const response = await fetch(consumerDetailsApi, {
-        method: "PUT",
-        headers: {
-          "Authorization": "Bearer " + token,
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
-
-      const result = await response.json();
-      console.log("Consumer Meter Details Response:", result);
-
-      if (result.tabledata) {
-        renderConsumerInfo(JSON.parse(result.tabledata));
-      }
-
-      if (result.gridData && result.gridData.length > 0) {
-        renderMeterGrid(result.gridData);
-      } else {
-        document.getElementById("meterTable").style.display = "none";
-        alert("No meter data found for this Consumer ID.");
-      }
-    } catch (error) {
-      console.error("Error fetching meter details:", error);
-      alert("Error fetching meter details. See console for more info.");
-    }
-  }
-
-  function renderConsumerInfo(consumers) {
-    const tbody = document.getElementById("consumerTableBody");
-    tbody.innerHTML = "";
-
-    consumers.forEach(c => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${c.consumer_number}</td>
-        <td>${c.consumer_name}</td>
-        <td>${c.installation_date}</td>
-        <td>${c.installation_address}</td>
-      `;
-      tbody.appendChild(row);
-    });
-
-    document.getElementById("consumerTable").style.display = "table";
-  }
-
-  function renderMeterGrid(meters) {
-    const tbody = document.getElementById("meterTableBody");
-    tbody.innerHTML = "";
-
-    meters.forEach(m => {
-      const row = document.createElement("tr");
-      document.getElementById("mid").value = m.meter_id;
-      row.innerHTML = `
-        <td>${m.meter_id}</td>
-        <td>${m.device_id}</td>
-        <td>${m.current_rating}</td>
-        <td>${m.first_communication}</td>
-        <td>${m.last_communication}</td>
-      `;
-      tbody.appendChild(row);
-    });
-
-    document.getElementById("meterTable").style.display = "table";
-  }
-
-
-  function base64UrlDecode(str) {
-  str = str.replace(/-/g, '+').replace(/_/g, '/');
-  const pad = str.length % 4;
-  if (pad) str += '='.repeat(4 - pad);
-  const decoded = atob(str);
-  return JSON.parse(decoded);
+async function single_disconnect() {
+  const meter = document.getElementById("mid").value;
+  await fetch(disconnectApi, {
+    method: "PUT",
+    headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      jobname: "Disconnect",
+      meterIdList: [meter],
+      payload: "Disconnect",
+      userid: userId
+    })
+  });
+  alert("Disconnected");
 }
 
-function decodeAndShowExpiry(token) {
-  try {
-    const payload = base64UrlDecode(token.split('.')[1]);
-    const exp = payload.exp;
-    const expiryDate = new Date(exp * 1000);
-    document.getElementById('token-expiry').textContent = expiryDate.toLocaleString();
-  } catch {
-    document.getElementById('token-expiry').textContent = "Invalid token";
-  }
-}
-
-
- async function searchRecord() {
-      const query = document.getElementById("consumerId").value.trim();
-      const output = document.getElementById("mid");
-
-      if (!query) {
-        alert("Please enter a value.");
-        return;
-      }
-
-      output.textContent = "⏳ Searching...";
-
-      try {
-        const url = `https://script.google.com/macros/s/AKfycbzqCJ8Cl_rNc3h46Kz6y0iETA31Wwxi8gHX-Et-SV7676DSaTOD-Ob6-ny9-qI-5v99Ng/exec?q=${encodeURIComponent(query)}`;
-        const res = await fetch(url);
-        const data = await res.json();
-
-        if (data.error) {
-          output.textContent = `❌ ${data.error}`;
-        } else {
-          let result = "";
-          for (let key in data) {
-            result += `${data[key]}`;
-          }
-          output.value = result.trim();
-        }
-      } catch (err) {
-        output.value = "⚠️ Error fetching data. Please try again.";
-      }
-    }
-
-
-function parseMeterInput(text) {
-  // Replace newlines, tabs, and multiple spaces with commas
-  return Array.from(
-    new Set( // remove duplicates automatically
-      text
-        .split(/[\s,]+/) // split on commas, newlines, tabs, or spaces
-        .map(m => m.trim()) // remove extra spaces
-        .filter(m => m.length > 0) // remove empties
-    )
-  );
-}
-
-async function bulk_connect() {
-  const rawText = document.getElementById("bulkMeters").value.trim();
-  if (!rawText) {
-    alert("Please paste or enter at least one meter number.");
-    return;
-  }
-
-  const meterList = parseMeterInput(rawText);
-  if (meterList.length === 0) {
-    alert("No valid meter numbers found.");
-    return;
-  }
-
-  console.log("Bulk Connect Meters:", meterList);
-
-  const payload = {
-    id: 0,
-    jobname: "Connect",
-    jobtype: "CommaSeperatedMeters",
-    jobcategory: "ConnectDisconnect",
-    frequencytype: "On Demand",
-    frequencyinterval: "",
-    meterIdList: meterList,
-    jobparameters: "LOAD_SWITCH_OPERATION",
-    payload: "Connect",
-    remarks: "",
-    reason: "Payment Settlement",
-    password: null,
-    userid: "8cb5531f-c59c-44c3-afd6-a2e26eb598f0",
-    jobid: "",
-    cronexpression: "",
-    priority: 0,
-    virtualgroupid: 0
-  };
-
-  try {
-    const response = await fetch(connectApi, {
-      method: "PUT",
-      headers: {
-        "Authorization": "Bearer " + token,
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const text = await response.text();
-    console.log("Bulk Connect API response:", text);
-
-    if (response.ok) {
-      alert(`✅ Bulk Connect job submitted for ${meterList.length} meters.`);
-    } else {
-      alert(`❌ Failed to connect. Status: ${response.status}`);
-    }
-  } catch (err) {
-    console.error("Bulk Connect error:", err);
-    alert("Error occurred while bulk connecting meters.");
-  }
-}
-
-async function bulk_disconnect() {
-  const rawText = document.getElementById("bulkMeters").value.trim();
-  if (!rawText) {
-    alert("Please paste or enter at least one meter number.");
-    return;
-  }
-
-  const meterList = parseMeterInput(rawText);
-  if (meterList.length === 0) {
-    alert("No valid meter numbers found.");
-    return;
-  }
-
-  console.log("Bulk Disconnect Meters:", meterList);
-
-
- for (const meterId of meterList) {
-        const payload = {
-        id: 0,
-  jobname: "Disconnect",
-  jobtype: "SingleMeter",
-  jobcategory: "ConnectDisconnect",
-  frequencytype: "On Demand",
-  frequencyinterval: "",
-  applicableduration: "",
-  meterIdList: [meterId],
-  jobparameters: "LOAD_SWITCH_OPERATION",
-  payload: "Disconnect",
-  remarks: "",
-  reason: "Non-payment of outstanding Debt",
-  password: null,
-  userid: userId,
-  jobid: "",
-  cronexpression: "",
-  priority: 0,
-  virtualgroupid: 0
-        };
-
-        try {
-          const response = await fetch(disconnectApi, {
-            method: "PUT",
-            headers: {
-              "Authorization": "Bearer " + token,
-              "Content-Type": "application/json",
-              "Accept": "application/json"
-            },
-            body: JSON.stringify(payload)
-          });
-
-          const text = await response.text();
-          console.log(`Meter ${meterId} → Response Code:`, response.status);
-          console.log("Response Body:", text);
-        } catch (error) {
-          console.error(`Error disconnecting meter ${meterId}:`, error);
-        }
-      }
-
-}
-     window.onload = async () => {
-      await getTokenFromSheet();
-      // Refresh token every 5 minutes automatically
-      setInterval(getTokenFromSheet, 5 * 60 * 1000);
-    };
+window.onload = async () => {
+  await getTokenFromSheet();
+};
 
 </script>
 
 </body>
 </html>
-
